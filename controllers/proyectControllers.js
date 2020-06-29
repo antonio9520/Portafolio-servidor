@@ -1,15 +1,9 @@
 const Proyecto = require("../models/ProyectoModel");
-
+const Imagen = require("../models/ImagenesModel")
+//POST
 exports.proyectoSave = async (req, res) => {
   try {
-    const {
-      nombre,
-      descripcion,
-      lenguajes,
-      gitURL,
-      proyectURL,
-      imageURL,
-    } = req.body;
+    const { nombre, descripcion, lenguajes, gitURL, proyectURL } = req.body;
 
     const proyecto = Proyecto({
       nombre,
@@ -17,13 +11,7 @@ exports.proyectoSave = async (req, res) => {
       lenguajes,
       gitURL,
       proyectURL,
-      imageURL,
     });
-
-    if (req.file) {
-      const { filename } = req.file;
-      proyecto.setImgUrl(filename);
-    }
 
     const proyectoSend = await proyecto.save();
     res.send({ proyectoSend });
@@ -33,25 +21,46 @@ exports.proyectoSave = async (req, res) => {
   }
 };
 
+//PUT
 exports.proyectoEdit = async (req, res) => {
-  const { lenguajes } = req.body;
-  const editarproyecto = {};
+  const { nombre, descripcion, lenguajes, gitURL, proyectURL } = req.body;
+  const newProyect = {};
+  if (nombre) {
+    newProyect.nombre = nombre;
+  }
+  if (descripcion) {
+    newProyect.descripcion = descripcion;
+  }
   if (lenguajes) {
-    editarproyecto.lenguajes = lenguajes;
+    newProyect.lenguajes = lenguajes;
+  }
+  if (gitURL) {
+    newProyect.gitURL = gitURL;
+  }
+  if (proyectURL) {
+    newProyect.proyectURL = proyectURL;
   }
   try {
-    const proyecto = await Proyecto.findByIdAndUpdate(
+    let proyecto = await Proyecto.findById(req.params.id);
+
+    if (!proyecto) {
+      return res.status(404).json({ msg: "El proyecto no existe" });
+    }
+
+    proyecto = await Proyecto.findByIdAndUpdate(
       { _id: req.params.id },
-      { $set: editarproyecto },
+      { $set: newProyect },
       { new: true }
     );
+
     res.send({ proyecto });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ msg: "hubo un error en actualizar" });
+    res.status(500).json({ msg: "no se pudo editar el proyecto" });
   }
 };
 
+//GET
 exports.getProyects = async (req, res) => {
   try {
     const proyectos = await Proyecto.find();
@@ -59,5 +68,33 @@ exports.getProyects = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ msg: "hubo un error al obtener los proyectos" });
+  }
+};
+
+//delete
+exports.deleteProyect = async (req, res) => {
+  try {
+    let proyecto = await Proyecto.findById(req.params.id);
+
+    if (!proyecto) {
+      return res.status(404).json({ msg: "Proyecto no existe" });
+    }
+    const imagenes = await Imagen.find({ proyecto })
+    console.log(imagenes.length)
+    
+    if(imagenes){
+      for(let i = 0; i < imagenes.length; i++){
+        const imagenes = await Imagen.find({ proyecto })
+        let [imagenD] = imagenes
+        console.log(imagenD)
+        await Imagen.findByIdAndRemove({ _id:  imagenD._id })
+      }
+      
+    }
+    await Proyecto.findByIdAndRemove({ _id: req.params.id });
+    res.send({ msg: "Proyecto eliminado" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ msg: "no se puede eliminar" });
   }
 };

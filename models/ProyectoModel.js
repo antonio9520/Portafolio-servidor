@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const { appConfig } = require("../config/config");
 
 const ProyectoSchema = new mongoose.Schema({
   nombre: {
@@ -25,14 +24,10 @@ const ProyectoSchema = new mongoose.Schema({
 
     trim: true,
   },
-  imageURL: {
-    type: String,
+  registro: {
+    type: Date,
+    default: Date.now(),
   },
 });
-
-ProyectoSchema.methods.setImgUrl = function setImgUrl(filename) {
-  const { host, port } = appConfig;
-  this.imageURL = `${host}:${port}/public/${filename}`;
-};
 
 module.exports = mongoose.model("Proyecto", ProyectoSchema);
