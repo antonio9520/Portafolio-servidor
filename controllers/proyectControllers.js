@@ -1,5 +1,5 @@
 const Proyecto = require("../models/ProyectoModel");
-const Imagen = require("../models/ImagenesModel")
+
 //POST
 exports.proyectoSave = async (req, res) => {
   try {
@@ -12,7 +12,10 @@ exports.proyectoSave = async (req, res) => {
       gitURL,
       proyectURL,
     });
-
+    if (req.file) {
+      const { filename } = req.file;
+      proyecto.setImgUrl(filename);
+    }
     const proyectoSend = await proyecto.save();
     res.send({ proyectoSend });
   } catch (error) {
