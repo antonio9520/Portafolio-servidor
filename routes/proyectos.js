@@ -7,7 +7,7 @@ const router = express.Router();
 //api/proyecto
 router.post("/", upload.single("imageURL"), proyectoControllers.proyectoSave);
 
-router.put("/:id", proyectoControllers.proyectoEdit);
+router.put("/:id", upload.single("imageURL"), proyectoControllers.proyectoEdit);
 
 router.get("/", proyectoControllers.getProyects);
 

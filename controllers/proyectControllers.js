@@ -1,4 +1,5 @@
 const Proyecto = require("../models/ProyectoModel");
+const { appConfig } = require("../config/config");
 
 //POST
 exports.proyectoSave = async (req, res) => {
@@ -27,6 +28,7 @@ exports.proyectoSave = async (req, res) => {
 //PUT
 exports.proyectoEdit = async (req, res) => {
   const { nombre, descripcion, lenguajes, gitURL, proyectURL } = req.body;
+
   const newProyect = {};
   if (nombre) {
     newProyect.nombre = nombre;
@@ -43,6 +45,11 @@ exports.proyectoEdit = async (req, res) => {
   if (proyectURL) {
     newProyect.proyectURL = proyectURL;
   }
+  if (req.file) {
+    const { filename } = req.file;
+    const { host, port } = appConfig;
+    newProyect.imageURL = `${host}:${port}/public/${filename}`;
+  }
   try {
     let proyecto = await Proyecto.findById(req.params.id);
 
@@ -50,13 +57,13 @@ exports.proyectoEdit = async (req, res) => {
       return res.status(404).json({ msg: "El proyecto no existe" });
     }
 
-    proyecto = await Proyecto.findByIdAndUpdate(
+    const editproyecto = await Proyecto.findByIdAndUpdate(
       { _id: req.params.id },
       { $set: newProyect },
       { new: true }
     );
 
-    res.send({ proyecto });
+    res.send({ editproyecto });
   } catch (error) {
     console.log(error);
     res.status(500).json({ msg: "no se pudo editar el proyecto" });
@@ -82,18 +89,8 @@ exports.deleteProyect = async (req, res) => {
     if (!proyecto) {
       return res.status(404).json({ msg: "Proyecto no existe" });
     }
-    const imagenes = await Imagen.find({ proyecto })
-    console.log(imagenes.length)
     
-    if(imagenes){
-      for(let i = 0; i < imagenes.length; i++){
-        const imagenes = await Imagen.find({ proyecto })
-        let [imagenD] = imagenes
-        console.log(imagenD)
-        await Imagen.findByIdAndRemove({ _id:  imagenD._id })
-      }
-      
-    }
+
     await Proyecto.findByIdAndRemove({ _id: req.params.id });
     res.send({ msg: "Proyecto eliminado" });
   } catch (error) {
