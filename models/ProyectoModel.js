@@ -21,6 +21,10 @@ const ProyectoSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  servidorURL: {
+    type: String,
+    trim: true,
+  },
   imageURL: {
     type: String,
   },

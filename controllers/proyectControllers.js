@@ -4,13 +4,14 @@ const { appConfig } = require("../config/config");
 //POST
 exports.proyectoSave = async (req, res) => {
   try {
-    const { nombre, descripcion, lenguajes, gitURL, proyectURL } = req.body;
+    const { nombre, descripcion, lenguajes, gitURL, proyectURL, servidorURL } = req.body;
 
     const proyecto = Proyecto({
       nombre,
       descripcion,
       lenguajes,
       gitURL,
+      servidorURL,
       proyectURL,
     });
     if (req.file) {
@@ -27,7 +28,7 @@ exports.proyectoSave = async (req, res) => {
 
 //PUT
 exports.proyectoEdit = async (req, res) => {
-  const { nombre, descripcion, lenguajes, gitURL, proyectURL } = req.body;
+  const { nombre, descripcion, lenguajes, gitURL, proyectURL, servidorURL } = req.body;
 
   const newProyect = {};
   if (nombre) {
@@ -44,6 +45,9 @@ exports.proyectoEdit = async (req, res) => {
   }
   if (proyectURL) {
     newProyect.proyectURL = proyectURL;
+  }
+  if (servidorURL) {
+    newProyect.servidorURL = proyectURL;
   }
   if (req.file) {
     const { filename } = req.file;
@@ -89,7 +93,6 @@ exports.deleteProyect = async (req, res) => {
     if (!proyecto) {
       return res.status(404).json({ msg: "Proyecto no existe" });
     }
-    
 
     await Proyecto.findByIdAndRemove({ _id: req.params.id });
     res.send({ msg: "Proyecto eliminado" });
